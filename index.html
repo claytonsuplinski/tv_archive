@@ -1,0 +1,95 @@
+<html>
+<head>
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">  
+
+	<link href="https://fonts.googleapis.com/css?family=Biryani:900" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Lato:300,400" rel="stylesheet">	
+	
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+	
+	<link rel="stylesheet" href="./assets/css/main.css">
+</head>
+<body>
+<div class="header">
+	<div class="button" onclick="random_show();" >RANDOM SHOW</div>
+	<div class="button" onclick="random_movie();">RANDOM MOVIE</div>
+</div>
+<div id="content"></div>
+</body>
+
+<script src="./assets/lib/jquery.min.js"></script>
+
+<script>
+var SHOWS = {};
+
+$.ajax({
+	url: './assets/data/shows.json',
+	dataType: 'json',
+	success: function(data){
+		data.shows.sort( function(a, b){ return a.title.toLowerCase() > b.title.toLowerCase(); });
+		data.movies.sort(function(a, b){ return a.title.toLowerCase() > b.title.toLowerCase(); });
+		SHOWS.data = data;
+		
+		SHOWS.data.shows.concat(SHOWS.data.movies).forEach(function(a){
+			if(!(a.link && a.link != "")) a.link = 'https://www.google.com/#q='+encodeURIComponent(a.title + " Online");
+		});
+	
+		$(".header").append(
+			'<div class="button button-sm" onclick="all_shows();">'+ data.shows.length +  ' shows</div>'+
+			'<div class="button button-sm" onclick="display_all();">'+ (data.shows.length + data.movies.length) + ' total</div>'+
+			'<div class="button button-sm" onclick="all_movies();">'+ data.movies.length + ' movies</div>'
+		);
+		display_all();
+	}
+});
+
+function get_image(name){
+	return './assets/img/'+name.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\']/g, "").replace(/ /g, '')+'.jpg';
+};
+
+function show_to_html(a){
+	return '<div class="container">'+
+		'<a href="'+a.link+'" target="_blank">'+
+			'<div class="item">'+
+				'<table>'+
+					'<tr>'+
+						'<td class="title" '+(a.title.length > 30 ? 'style="font-size:1vw;"' : '')+'>'+a.title.toUpperCase()+'</div>'+
+					'</tr>'+
+					'<tr><td class="img" style="background-image:url('+get_image(a.title)+');"></td></tr>'+
+				'</table>'+
+			'</div>'+
+		'</a>'+
+	'</div>';
+};
+
+function display_shows(shows){
+	shows.sort(function(a, b){ return a.title.toLowerCase() > b.title.toLowerCase(); });
+	$("#content").html('');
+	$("#content").html( shows.map(function(a){ return show_to_html(a); }).join('') );
+};
+
+function display_all(){
+	display_shows( SHOWS.data.shows.concat(SHOWS.data.movies) );
+};
+
+function all_shows(){
+	display_shows( SHOWS.data.shows );
+};
+
+function all_movies(){
+	display_shows( SHOWS.data.movies );
+};
+
+function random_show(){
+	window.open(SHOWS.data.shows[Math.floor(Math.random()*SHOWS.data.shows.length)].link, '_blank');
+};
+
+function random_movie(){
+	window.open(SHOWS.data.movies[Math.floor(Math.random()*SHOWS.data.movies.length)].link, '_blank');
+};
+</script>
+</html>
